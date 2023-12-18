@@ -1,0 +1,99 @@
+import { useEffect, useState } from 'react';
+
+import Form from 'react-bootstrap/Form';
+import { useEditProductQuery ,useUpdateProductMutation} from '../apis/productApi';
+import {toast} from 'react-toastify';
+import {useNavigate} from 'react-router-dom';
+import { Button } from 'react-bootstrap';
+
+
+function AddProduct({productId}) {
+  const [name, setName] = useState();
+  const [price, setPrice] = useState();
+  const [quantity, setQuantity] = useState();
+  const [id, setId] = useState();
+  const [file, setFile] = useState(null);
+  const [edit,setEdit] =useState(false);
+  
+
+  //mutation and query variables
+  const {data} = useEditProductQuery(productId);
+  const [updateProduct] = useUpdateProductMutation();
+
+
+  //setting state data
+  useEffect(()=>{
+    if(data){
+     localStorage.setItem(`product/${data._id}`,JSON.stringify(data));
+     const store = JSON.parse(localStorage.getItem(`product/${data._id}`));
+     setName(store?.name||data.name);
+     setPrice(store?.price||data.price);
+     setQuantity(store?.quantity||data.quantity)
+     setFile(store?.images || data.images);
+     setId(productId);
+    }
+    
+  },[data])
+
+  const navigate = useNavigate()
+
+  //submit 
+  const handleSubmit = async(e,id)=>{
+    e.preventDefault();
+    setEdit(true)
+    let formData = new FormData(); 
+    formData.append('name',name);
+    formData.append('price',price);
+    formData.append('quantity',quantity);
+
+    if (file && file.length > 0) {
+      for (let i = 0; i < file.length; i++) {
+        formData.append('file', file[i]);
+      }
+    }
+   
+    try {
+       const result = await updateProduct({id,data:formData}).unwrap();
+       if(result){
+       await localStorage.removeItem(`product/${productId}`);
+        toast.success("Product Updated successfully");
+       }
+    } catch (err) {
+      await toast.error(err?.data?.message || err.error);
+    }
+    
+  }
+
+  
+
+  return (
+    <>
+    <h5 style={{textAlign:"center",color:"blue" ,borderTop:"2px solid" ,padding:"1em"}}>Edit Product Details</h5>
+    <Form onSubmit={(e)=>handleSubmit(e,id)} encType='multipart/form-data' style={{ width: "50%", margin: "auto", backgroundColor: "white" , padding:"2em" ,marginTop:"1em"}}>
+      <Form.Group className="mb-3" controlId="formBasicName" >
+        <Form.Label>Name</Form.Label>
+        <Form.Control type="text" placeholder="Enter name" onChange={e => setName(e.target.value)} value={name} />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formBasicPrice" >
+        <Form.Label>Price</Form.Label>
+        <Form.Control type="text" placeholder="price" onChange={e => setPrice(e.target.value)} value={price}/>
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formBasicQuantity">
+        <Form.Label>Quantity</Form.Label>
+        <Form.Control type="text" placeholder="quantity"  onChange={e => setQuantity(e.target.value)} value={quantity} />
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formBasicPrice">
+        <Form.Label>Price</Form.Label>
+        <Form.Control type="file" onChange={e => setFile(e.target.files)} multiple  name="file"/>
+      </Form.Group>
+
+    <Button type='submit'>update</Button>
+    </Form>
+    </>
+  );
+}
+
+export default AddProduct;
