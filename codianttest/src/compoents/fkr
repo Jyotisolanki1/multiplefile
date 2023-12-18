@@ -7,7 +7,7 @@ import {useNavigate} from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 
 
-function AddProduct({ productId, handleClose }) {
+function AddProduct({productId}) {
   const [name, setName] = useState();
   const [price, setPrice] = useState();
   const [quantity, setQuantity] = useState();
@@ -16,7 +16,8 @@ function AddProduct({ productId, handleClose }) {
   const [edit,setEdit] =useState(false);
   const [show, setShow] = useState(false);
 
-
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   
 
   //mutation and query variables
@@ -60,7 +61,6 @@ function AddProduct({ productId, handleClose }) {
        if(result){
        await localStorage.removeItem(`product/${productId}`);
         toast.success("Product Updated successfully");
-        handleClose()
        }
     } catch (err) {
       await toast.error(err?.data?.message || err.error);
@@ -95,9 +95,6 @@ function AddProduct({ productId, handleClose }) {
       </Form.Group>
 
     <Button type='submit' onClick={handleClose}>update</Button>
-    <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
     </Form>
     </>
   );

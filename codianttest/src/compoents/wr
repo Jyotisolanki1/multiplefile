@@ -8,14 +8,14 @@ import EditProduct from './EditProduct';
 import Modal from 'react-bootstrap/Modal';
 
 function Product() {
+    const [show, setShow] = useState(false);
+    const [editModalShow, setEditModalShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   const { data, error, isLoading } = useGetProductQuery();
   const [deleteProduct] = useDeleteProductMutation();
-  
-    const [show, setShow] = useState(false);
-  
-    const handleClose = () => setShow(false);
-    const handleShow = (id) =>{setEditProductId(id);
-      setShow(true);};
+
 
   const [editProductId, setEditProductId] = useState(null);
 
@@ -39,7 +39,7 @@ function Product() {
   const handleEdit = (id) => {
     setEditProductId(id);
   };
-console.log(data)
+
   return (
     <>
       {isLoading ? (
@@ -71,34 +71,39 @@ console.log(data)
 
                 
 
-               
+                {editProductId === item._id ? (
+                  <EditProduct productId={item._id} />
+                ) : (
                   <>
                   <Button variant="danger" onClick={() => handleDelete(item._id)}>
                   Delete
                 </Button>
                 <br />
                 <br />
-                  <Button variant="primary"  onClick={() => handleShow(item._id)}>
-                  Edit
-                </Button>
+                <Button variant="primary" onClick={() => handleEdit(item._id)}>
+                    Edit
+                  </Button>
+                  <Button variant="primary" onClick={handleShow}>
+               Launch demo modal
+              </Button>
+
+
+              //model
+              <Modal show={show} onHide={handleClose}>
+              <Modal.Header closeButton>
+                
+              </Modal.Header>
+              <Modal.Body>
+              <EditProduct productId={item._id} />
+              </Modal.Body>
+          
+            </Modal>
                   </>
                   
-            
+                )}
               </Card.Body>
             </Card>
-            <Modal show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
-              <Modal.Title>Modal heading</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-            <EditProduct productId={editProductId} handleClose={handleClose} />
-            </Modal.Body>
-            <Modal.Footer>
-            </Modal.Footer>
-          </Modal>
           </div>
-
-          
         ))
       )}
     </>
